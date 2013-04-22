@@ -31,7 +31,7 @@ IniRead, startWithWindows, %iniFile%, Display, start_with_windows, 0
 IniRead, startHidden, %iniFile%, Display, start_hidden, 1
 IniRead, initialHeight, %iniFile%, Display, initial_height, 380
 IniRead, initialWidth, %iniFile%, Display, initial_width, 100 ; percent
-IniRead, pinned, %iniFile%, Display, pinned_by_default, 1
+IniRead, autohide, %iniFile%, Display, autohide_by_default, 0
 IniRead, animationStep, %iniFile%, Display, animation_step, 20
 IniRead, animationTimeout, %iniFile%, Display, animation_timeout, 10
 IfNotExist %iniFile%
@@ -65,9 +65,9 @@ Menu, Tray, Tip, mintty-quake-console %VERSION%
 Menu, Tray, Add, Show/Hide, ToggleVisible
 Menu, Tray, Add, Enabled, ToggleScriptState
 Menu, Tray, Check, Enabled
-Menu, Tray, Add, Pinned, TogglePinned
-if (pinned)
-    Menu, Tray, Check, Pinned
+Menu, Tray, Add, Auto-Hide, ToggleAutoHide
+if (autohide)
+    Menu, Tray, Check, Auto-Hide
 Menu, Tray, Add
 Menu, Tray, Add, Options, ShowOptionsGui
 Menu, Tray, Add, About, AboutDlg
@@ -124,7 +124,7 @@ toggle()
 
 Slide(Window, Dir)
 {
-    global animationStep, animationTimeout, pinned, isVisible, ScreenTop, ScreenLeft, ScreenWidth
+    global animationStep, animationTimeout, autohide, isVisible, ScreenTop, ScreenLeft, ScreenWidth
     WinGetPos, Xpos, Ypos, WinWidth, WinHeight, %Window%
     left := ScreenLeft + ((ScreenWidth - width) /  2)
     If (Dir = "In") And (Ypos < 0)
@@ -145,13 +145,13 @@ Slide(Window, Dir)
 
     If (Dir = "In") And (Ypos >= ScreenTop) {
         WinMove, %Window%,,, ScreenTop
-        if (!pinned)
+        if (autohide)
             SetTimer, HideWhenInactive, 250
         isVisible := True
     }
     If (Dir = "Out") And (Ypos <= (-WinHeight)) {
         WinHide %Window%
-        if (!pinned)
+        if (autohide)
             SetTimer, HideWhenInactive, Off
         isVisible := False
     }
@@ -223,9 +223,9 @@ ToggleScriptState:
         toggleScript("on")
 return
 
-TogglePinned:
-    pinned := !pinned
-    Menu, Tray, ToggleCheck, Pinned
+ToggleAutoHide:
+    autohide := !autohide
+    Menu, Tray, ToggleCheck, Auto-Hide
     SetTimer, HideWhenInactive, Off
 return
 
@@ -300,7 +300,7 @@ SaveSettings() {
     IniWrite, %startHidden%, %iniFile%, Display, start_hidden
     IniWrite, %initialHeight%, %iniFile%, Display, initial_height
     IniWrite, %initialWidth%, %iniFile%, Display, initial_width
-    IniWrite, %pinned%, %iniFile%, Display, pinned_by_default
+    IniWrite, %autohide%, %iniFile%, Display, autohide_by_default
     IniWrite, %animationStep%, %inifile%, Display, animation_step
     IniWrite, %animationTimeout%, %iniFile%, Display, animation_timeout
     CheckWindowsStartup(startWithWindows)
@@ -337,7 +337,7 @@ OptionsGui() {
         Gui, Add, Text, x22 y90 w100 h20 , Hotkey Trigger:
         Gui, Add, Hotkey, x122 y90 w100 h20 VconsoleHotkey, %consoleHotkey%
         Gui, Add, CheckBox, x22 y150 w100 h30 VstartHidden Checked%startHidden%, Start Hidden
-        Gui, Add, CheckBox, x22 y180 w100 h30 Vpinned Checked%pinned%, Pinned
+        Gui, Add, CheckBox, x22 y180 w130 h30 Vautohide Checked%autohide%, Auto-Hide when focus is lost
         Gui, Add, CheckBox, x22 y210 w120 h30 VstartWithWindows Checked%startWithWindows%, Start With Windows
         Gui, Add, Text, x22 y250 w100 h20 , Initial Height (px):
         Gui, Add, Edit, x22 y270 w100 h20 VinitialHeight, %initialHeight%
