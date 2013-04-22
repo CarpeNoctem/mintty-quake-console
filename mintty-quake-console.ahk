@@ -1,8 +1,7 @@
 ; Mintty quake console: Visor-like functionality for Windows
-; Version: 1.1
-; Author: Jon Rogers (lonepie@gmail.com)
-; URL: https://github.com/lonepie/mintty-quake-console
+; URL: https://github.com/CarpeNoctem/mintty-quake-console
 ; Credits:
+;	Forked from: https://github.com/lonepie/mintty-quake-console
 ;	Originally forked from: https://github.com/marcharding/mintty-quake-console
 ;	mintty: http://code.google.com/p/mintty/
 ;	Visor: http://visor.binaryage.com/
@@ -23,7 +22,7 @@ cygwinBinDir := cygwinRootDir . "\bin"
 ;*******************************************************************************
 ;				Preferences & Variables
 ;*******************************************************************************
-VERSION := 1.1
+VERSION := "ng"
 iniFile := "mintty-quake-console.ini"
 IniRead, minttyPath, %iniFile%, General, mintty_path, % cygwinBinDir . "\mintty.exe"
 IniRead, minttyArgs, %iniFile%, General, mintty_args, -
@@ -169,14 +168,11 @@ toggleScript(state) {
 			return
 		}
 		WinHide ahk_pid %hw_mintty%
-		;WinSet, Style, -0xC00000, ahk_pid %hw_mintty% ; hide caption/title
-		;WinSet, Style, -0x40000, ahk_pid %hw_mintty% ; hide thick border
-		WinSet, Style, -0xC40000, ahk_pid %hw_mintty% ; hide window borders
-		; WinGetPos, Xpos, Ypos, WinWidth, WinHeight, ahk_pid %hw_mintty%
-		;if (OrigYpos >= 0 or OrigWinWidth < ScreenWidth)
-				width := ScreenWidth * widthConsoleWindow / 100
-				left := ScreenLeft + ((ScreenWidth - width) /  2)
-				WinMove, ahk_pid %hw_mintty%, , %left%, -%heightConsoleWindow%, %width%, %heightConsoleWindow% ; resize/move
+		WinSet, Style, -0xC40000, ahk_pid %hw_mintty% ; hide window borders and caption/title
+
+		width := ScreenWidth * widthConsoleWindow / 100
+		left := ScreenLeft + ((ScreenWidth - width) /  2)
+		WinMove, ahk_pid %hw_mintty%, , %left%, -%heightConsoleWindow%, %width%, %heightConsoleWindow% ; resize/move
 		
 		scriptEnabled := True
 		Menu, Tray, Check, Enabled
@@ -190,8 +186,7 @@ toggleScript(state) {
 		Slide("ahk_pid" . hw_mintty, "In")
 	}
 	else if (state = "off") {
-		WinSet, Style, +0xC00000, ahk_pid %hw_mintty% ; show caption/title
-		WinSet, Style, +0x40000, ahk_pid %hw_mintty% ; show thick border
+		WinSet, Style, +0xC40000, ahk_pid %hw_mintty% ; show window borders and caption/title
 		if (OrigYpos >= 0)
 			WinMove, ahk_pid %hw_mintty%, , %OrigXpos%, %OrigYpos%, %OrigWinWidth%, %OrigWinHeight% ; restore size / position
 		else
@@ -263,7 +258,7 @@ Reload
 return
 
 AboutDlg:
-	MsgBox, 64, About, mintty-quake-console AutoHotkey script`nVersion: %VERSION%`nAuthor: Jonathon Rogers <lonepie@gmail.com>`nURL: https://github.com/lonepie/mintty-quake-console
+	MsgBox, 64, About, mintty-quake-console AutoHotkey script`nVersion: %VERSION%`nURL: https://github.com/CarpeNoctem/mintty-quake-console
 return
 
 ShowOptionsGui:
@@ -274,11 +269,7 @@ return
 ;				Extra Hotkeys						
 ;*******************************************************************************
 #IfWinActive ahk_class mintty
-; why this method doesn't work, I don't know...
-; Hotkey, IfWinActive, ahk_pid %hw_mintty%
-; Hotkey, ^!NumpadAdd, IncreaseHeight
-; Hotkey, ^!NumpadSub, DecreaseHeight
-; IncreaseHeight:
+
 ^!NumpadAdd::
 	if(WinActive("ahk_pid" . hw_mintty)) {
 		if(heightConsoleWindow < A_ScreenHeight) {
@@ -359,7 +350,7 @@ OptionsGui() {
 		Gui, Add, Slider, x232 y240 w220 h30 VanimationTimeout Range5-50, %animationTimeout%
 		Gui, Add, Text, x232 y280 w220 h20 +Center, Animation Speed = Delta / Time
 	}
-	; Generated using SmartGUI Creator 4.0
+	; Initially generated using SmartGUI Creator 4.0
 	Gui, Show, h410 w482, TerminalHUD Options
 	Gui, +LastFound
 	GuiID := WinExist()
@@ -461,14 +452,3 @@ GetScreenHeight() {
     return A_ScreenHeight
   }
 }
-/*
-ResizeAndCenter(w, h)
-{
-  ScreenX := GetScreenLeft()
-  ScreenY := GetScreenTop()
-  ScreenWidth := GetScreenWidth()
-  ScreenHeight := GetScreenHeight()
-
-  WinMove A,,ScreenX + (ScreenWidth/2)-(w/2),ScreenY + (ScreenHeight/2)-(h/2),w,h
-}
-*/
